@@ -9,7 +9,7 @@ const items = [
   { href: "/app/companies", label: "Companies" },
   { href: "/app/activities", label: "Activities" },
   { href: "/app/quotes", label: "Quotes" },
-  { href: "/app/settings", label: "Settings" }
+  { href: "/app/settings", label: "Settings" },
 ];
 
 export default function Nav() {
@@ -25,12 +25,16 @@ export default function Nav() {
         {items.map(i => {
           const active = pathname === i.href || pathname.startsWith(i.href + "/");
           return (
-            <Link key={i.href} href={i.href} style={{
-              padding: ".6rem .8rem",
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: active ? "rgba(79,70,229,.15)" : "transparent"
-            }}>
+            <Link
+              key={i.href}
+              href={i.href}
+              style={{
+                padding: ".6rem .8rem",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: active ? "rgba(79,70,229,.15)" : "transparent",
+              }}
+            >
               {i.label}
             </Link>
           );
