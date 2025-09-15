@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { withTenant } from '@/src/server/db'
+import { withTenant } from "@/src/server/db";
 import { getHost } from '@/src/server/host'
 
 export async function GET(req: NextRequest) {
