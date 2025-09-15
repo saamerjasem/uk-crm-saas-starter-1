@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const sig = req.headers.get('stripe-signature')
   const whsec = process.env.STRIPE_WEBHOOK_SECRET as string
   if (!sig || !whsec) return NextResponse.json({ error: 'Missing Stripe headers' }, { status: 400 })
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2023-10-16' })
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, { apiVersion: '2024-04-10' })
   const buf = Buffer.from(await req.arrayBuffer())
   let event: Stripe.Event
   try {
