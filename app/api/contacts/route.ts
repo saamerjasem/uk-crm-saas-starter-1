@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       const { rows } = await client.query(
         `select id, first_name, last_name, email, phone
            from contacts
-          where tenant_id = current_setting('app.tenant_id', true)::uuid
+          where tenant_id = nullif(current_setting('app.tenant_id', true), '')::uuid
           order by created_at desc nulls last, last_name asc, first_name asc`
       );
       return rows;
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const row = await withTenant(host, async (client) => {
       const { rows } = await client.query(
         `insert into contacts(first_name, last_name, email, phone, tenant_id)
-         values ($1,$2,$3,$4, current_setting('app.tenant_id', true)::uuid)
+         values ($1,$2,$3,$4, nullif(current_setting('app.tenant_id', true), '')::uuid)
          returning id`,
         [first_name, last_name, email || null, phone || null]
       );
