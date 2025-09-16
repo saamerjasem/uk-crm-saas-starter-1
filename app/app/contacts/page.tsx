@@ -79,57 +79,53 @@ export default function ContactsPage() {
   }, [q, contacts]);
 
   return (
-    <div className="w-full mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Contacts</h1>
+    <div className="w-full max-w-7xl mx-auto p-6">
+      <h1 className="text-3xl font-semibold mb-6">Contacts</h1>
 
       {err && <p className="text-red-400 mb-3">{err}</p>}
 
-      {/* Create form */}
-      <form
-        onSubmit={createContact}
-        className="grid gap-3 mb-6"
-        style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr auto' }}
-      >
+      {/* Create + Search */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
         <input
           placeholder="First Name"
           value={form.first_name}
           onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
-          className="border rounded p-2"
+          className="border border-gray-700/60 bg-black/20 rounded p-2"
         />
         <input
           placeholder="Last Name"
           value={form.last_name}
           onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
-          className="border rounded p-2"
+          className="border border-gray-700/60 bg-black/20 rounded p-2"
         />
         <input
           placeholder="Email"
           type="email"
           value={form.email}
           onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-          className="border rounded p-2"
+          className="border border-gray-700/60 bg-black/20 rounded p-2"
         />
         <input
           placeholder="Phone"
           value={form.phone}
           onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-          className="border rounded p-2"
+          className="border border-gray-700/60 bg-black/20 rounded p-2"
         />
         <button
-          className="bg-blue-600 text-white px-4 rounded disabled:opacity-50"
+          onClick={createContact}
           disabled={saving}
+          className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded px-4 py-2 disabled:opacity-50"
+          aria-label="Add contact"
         >
           {saving ? 'Saving…' : 'Add Contact'}
         </button>
-      </form>
 
-      {/* Search */}
-      <div className="mb-3">
+        {/* Search spans full width on small screens */}
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search name, email or phone"
-          className="border rounded p-2 w-full max-w-md"
+          className="md:col-span-5 border border-gray-700/60 bg-black/20 rounded p-2 mt-1"
         />
       </div>
 
@@ -139,22 +135,34 @@ export default function ContactsPage() {
       ) : filtered.length === 0 ? (
         <p className="text-gray-400">No contacts found.</p>
       ) : (
-        <div className="overflow-x-auto rounded-md">
-          <table className="w-full table-auto border-collapse border border-gray-700">
-            <thead className="bg-gray-900">
-              <tr>
-                <th className="text-left px-3 py-2 border border-gray-700">First Name</th>
-                <th className="text-left px-3 py-2 border border-gray-700">Last Name</th>
-                <th className="text-left px-3 py-2 border border-gray-700">Email</th>
-                <th className="text-left px-3 py-2 border border-gray-700">Phone</th>
-                <th className="text-left px-3 py-2 border border-gray-700">Actions</th>
+        <div className="relative overflow-x-auto rounded-md border border-gray-700/70 bg-black/20">
+          <table className="w-full table-fixed text-sm">
+            {/* Fixed column proportions so the table feels balanced */}
+            <colgroup>
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '34%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '12%' }} />
+            </colgroup>
+
+            <thead className="bg-gray-900/70 sticky top-0 z-10">
+              <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-medium [&>th]:border-b [&>th]:border-gray-700/70">
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {filtered.map((c) => (
+
+            <tbody className="divide-y divide-gray-800/70">
+              {filtered.map((c, idx) => (
                 <tr
                   key={c.id}
-                  className="hover:bg-gray-900 cursor-pointer"
+                  className={`hover:bg-gray-900/50 cursor-pointer ${
+                    idx % 2 === 1 ? 'bg-gray-950/30' : ''
+                  }`}
                   onClick={() => router.push(`/app/contacts/${c.id}`)}
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -166,13 +174,17 @@ export default function ContactsPage() {
                   role="button"
                   aria-label={`Open ${c.first_name} ${c.last_name}`}
                 >
-                  <td className="px-3 py-2 border border-gray-700">{c.first_name}</td>
-                  <td className="px-3 py-2 border border-gray-700">{c.last_name}</td>
-                  <td className="px-3 py-2 border border-gray-700">{c.email || '-'}</td>
-                  <td className="px-3 py-2 border border-gray-700">{c.phone || '-'}</td>
+                  <td className="px-4 py-3 truncate" title={c.first_name}>{c.first_name}</td>
+                  <td className="px-4 py-3 truncate" title={c.last_name}>{c.last_name}</td>
+                  <td className="px-4 py-3">
+                    <span className="block truncate" title={c.email || ''}>
+                      {c.email || '-'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 truncate" title={c.phone || ''}>{c.phone || '-'}</td>
                   <td
-                    className="px-3 py-2 border border-gray-700"
-                    onClick={(e) => e.stopPropagation()}
+                    className="px-4 py-3"
+                    onClick={(e) => e.stopPropagation()} // allow link without triggering row click
                   >
                     <Link
                       href={`/app/contacts/${c.id}`}
@@ -191,6 +203,3 @@ export default function ContactsPage() {
     </div>
   );
 }
-
-/* keep file a module even if someone strips imports accidentally */
-// export {}; // not required, but harmless if you want to force “module” status
