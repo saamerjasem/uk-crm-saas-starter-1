@@ -1,10 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Contact = { id:string; first_name:string; last_name:string; email:string|null; phone:string|null };
 
 export default function ContactsPage() {
+  const router = useRouter();
+
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
@@ -116,13 +119,32 @@ export default function ContactsPage() {
           </thead>
           <tbody>
             {filtered.map(c => (
-              <tr key={c.id} className="border-t border-gray-800">
+              <tr
+                key={c.id}
+                className="border-t border-gray-800 hover:bg-gray-900 cursor-pointer"
+                onClick={() => router.push(`/app/contacts/${c.id}`)}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.push(`/app/contacts/${c.id}`);
+                  }
+                }}
+                role="button"
+                aria-label={`Open ${c.first_name} ${c.last_name}`}
+              >
                 <td className="p-2">{c.first_name}</td>
                 <td className="p-2">{c.last_name}</td>
                 <td className="p-2">{c.email || '-'}</td>
                 <td className="p-2">{c.phone || '-'}</td>
-                <td className="p-2">
-                  <Link href={`/app/contacts/${c.id}`} className="text-blue-400 hover:underline">Edit</Link>
+                <td className="p-2" onClick={(e) => e.stopPropagation()}>
+                  <Link
+                    href={`/app/contacts/${c.id}`}
+                    className="text-blue-400 hover:underline"
+                    aria-label={`Edit ${c.first_name} ${c.last_name}`}
+                  >
+                    Edit
+                  </Link>
                 </td>
               </tr>
             ))}
