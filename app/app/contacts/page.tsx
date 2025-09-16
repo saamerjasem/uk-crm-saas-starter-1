@@ -72,7 +72,7 @@ export default function ContactsPage() {
   }, [q, contacts]);
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Contacts</h1>
 
       {err && <p className="text-red-400 mb-3">{err}</p>}
@@ -95,61 +95,94 @@ export default function ContactsPage() {
       </form>
 
       {/* Search */}
-      <div className="mb-3">
-        <input value={q} onChange={e=>setQ(e.target.value)}
-               placeholder="Search name, email or phone"
-               className="border rounded p-2 w-full max-w-md"/>
+      <div className="mb-3 grid gap-3" style={{ gridTemplateColumns:'1fr 1fr 1fr 1fr' }}>
+        <input placeholder="First Name" className="border rounded p-2" value={q} onChange={e=>setQ(e.target.value)} />
+        <input placeholder="Last Name" className="border rounded p-2 hidden sm:block" readOnly />
+        <input placeholder="Email" className="border rounded p-2 hidden md:block" readOnly />
+        <input placeholder="Phone" className="border rounded p-2 hidden lg:block" readOnly />
+        {/* The single search box */}
+        <input
+          value={q}
+          onChange={e=>setQ(e.target.value)}
+          placeholder="Search name, email or phone"
+          className="border rounded p-2 col-span-full max-w-md"
+        />
       </div>
 
-      {/* Table */}
+      {/* Responsive table */}
       {loading ? (
         <p>Loading…</p>
       ) : filtered.length === 0 ? (
         <p className="text-gray-400">No contacts found.</p>
       ) : (
-        <table className="w-full border border-gray-700 rounded overflow-hidden">
-          <thead className="bg-gray-900">
-            <tr>
-              <th className="text-left p-2">First Name</th>
-              <th className="text-left p-2">Last Name</th>
-              <th className="text-left p-2">Email</th>
-              <th className="text-left p-2">Phone</th>
-              <th className="text-left p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(c => (
-              <tr
-                key={c.id}
-                className="border-t border-gray-800 hover:bg-gray-900 cursor-pointer"
-                onClick={() => router.push(`/app/contacts/${c.id}`)}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    router.push(`/app/contacts/${c.id}`);
-                  }
-                }}
-                role="button"
-                aria-label={`Open ${c.first_name} ${c.last_name}`}
-              >
-                <td className="p-2">{c.first_name}</td>
-                <td className="p-2">{c.last_name}</td>
-                <td className="p-2">{c.email || '-'}</td>
-                <td className="p-2">{c.phone || '-'}</td>
-                <td className="p-2" onClick={(e) => e.stopPropagation()}>
-                  <Link
-                    href={`/app/contacts/${c.id}`}
-                    className="text-blue-400 hover:underline"
-                    aria-label={`Edit ${c.first_name} ${c.last_name}`}
-                  >
-                    Edit
-                  </Link>
-                </td>
+        <div className="overflow-x-auto rounded border border-gray-700">
+          <table className="min-w-[700px] w-full table-fixed border-separate border-spacing-0">
+            {/* Proportional widths that scale with window; tune if you like */}
+            <colgroup>
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '34%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '12%' }} />
+            </colgroup>
+
+            <thead className="bg-gray-900">
+              <tr>
+                <th className="text-left px-3 py-2">First Name</th>
+                <th className="text-left px-3 py-2">Last Name</th>
+                <th className="text-left px-3 py-2">Email</th>
+                <th className="text-left px-3 py-2">Phone</th>
+                <th className="text-left px-3 py-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {filtered.map((c) => (
+                <tr
+                  key={c.id}
+                  className="border-t border-gray-800 hover:bg-gray-900 cursor-pointer"
+                  onClick={() => router.push(`/app/contacts/${c.id}`)}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      router.push(`/app/contacts/${c.id}`);
+                    }
+                  }}
+                  role="button"
+                  aria-label={`Open ${c.first_name} ${c.last_name}`}
+                >
+                  <td className="px-3 py-2 whitespace-nowrap truncate" title={c.first_name}>
+                    {c.first_name}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap truncate" title={c.last_name}>
+                    {c.last_name}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <span className="block truncate" title={c.email || ''}>
+                      {c.email || '-'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap truncate" title={c.phone || ''}>
+                    {c.phone || '-'}
+                  </td>
+                  <td
+                    className="px-3 py-2 whitespace-nowrap"
+                    onClick={(e) => e.stopPropagation()} // keep row click, but allow link click
+                  >
+                    <Link
+                      href={`/app/contacts/${c.id}`}
+                      className="text-blue-400 hover:underline"
+                      aria-label={`Edit ${c.first_name} ${c.last_name}`}
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
