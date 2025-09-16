@@ -73,11 +73,20 @@ export default function ContactsPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Contacts</h1>
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <h1 className="text-2xl font-bold">Contacts</h1>
+        {/* Search */}
+        <input
+          value={q}
+          onChange={e=>setQ(e.target.value)}
+          placeholder="Search name, email or phone"
+          className="border rounded p-2 w-full max-w-md"
+        />
+      </div>
 
       {err && <p className="text-red-400 mb-3">{err}</p>}
 
-      {/* Create form */}
+      {/* Create form, one row */}
       <form onSubmit={createContact} className="grid gap-3 mb-6"
             style={{ gridTemplateColumns:'1fr 1fr 1fr 1fr auto' }}>
         <input placeholder="First Name" value={form.first_name}
@@ -94,21 +103,6 @@ export default function ContactsPage() {
         </button>
       </form>
 
-      {/* Search */}
-      <div className="mb-3 grid gap-3" style={{ gridTemplateColumns:'1fr 1fr 1fr 1fr' }}>
-        <input placeholder="First Name" className="border rounded p-2" value={q} onChange={e=>setQ(e.target.value)} />
-        <input placeholder="Last Name" className="border rounded p-2 hidden sm:block" readOnly />
-        <input placeholder="Email" className="border rounded p-2 hidden md:block" readOnly />
-        <input placeholder="Phone" className="border rounded p-2 hidden lg:block" readOnly />
-        {/* The single search box */}
-        <input
-          value={q}
-          onChange={e=>setQ(e.target.value)}
-          placeholder="Search name, email or phone"
-          className="border rounded p-2 col-span-full max-w-md"
-        />
-      </div>
-
       {/* Responsive table */}
       {loading ? (
         <p>Loading…</p>
@@ -116,14 +110,14 @@ export default function ContactsPage() {
         <p className="text-gray-400">No contacts found.</p>
       ) : (
         <div className="overflow-x-auto rounded border border-gray-700">
-          <table className="min-w-[700px] w-full table-fixed border-separate border-spacing-0">
-            {/* Proportional widths that scale with window; tune if you like */}
+          <table className="min-w-[720px] w-full table-fixed border-separate border-spacing-0">
+            {/* Proportional widths that scale with window */}
             <colgroup>
               <col style={{ width: '18%' }} />
               <col style={{ width: '18%' }} />
-              <col style={{ width: '34%' }} />
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '12%' }} />
+              <col style={{ width: '38%' }} />
+              <col style={{ width: '16%' }} />
+              <col style={{ width: '10%' }} />
             </colgroup>
 
             <thead className="bg-gray-900">
@@ -168,7 +162,7 @@ export default function ContactsPage() {
                   </td>
                   <td
                     className="px-3 py-2 whitespace-nowrap"
-                    onClick={(e) => e.stopPropagation()} // keep row click, but allow link click
+                    onClick={(e) => e.stopPropagation()} // keep row click, allow link click
                   >
                     <Link
                       href={`/app/contacts/${c.id}`}
