@@ -1,136 +1,134 @@
 'use client';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
 
-import { useEffect, useState } from 'react';
+type Contact = { id:string; first_name:string; last_name:string; email:string|null; phone:string|null };
 
 export default function ContactsPage() {
-  const [contacts, setContacts] = useState<any[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-  });
   const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string|null>(null);
+  const [form, setForm] = useState({ first_name:'', last_name:'', email:'', phone:'' });
 
-  async function fetchContacts() {
+  async function load() {
     try {
       setLoading(true);
-      const res = await fetch('/api/contacts');
-      const data = await res.json();
-      setContacts(data.contacts || []);
-    } catch (e) {
-      console.error(e);
-      setError('Failed to load contacts');
+      setErr(null);
+      const r = await fetch(`/api/contacts?ts=${Date.now()}`, { cache:'no-store' });
+      if (!r.ok) throw new Error(`GET /api/contacts ${r.status}`);
+      const j = await r.json();
+      setContacts(j.contacts || []);
+    } catch (e:any) {
+      setErr(e.message || 'Failed to load contacts');
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleAddContact(e: React.FormEvent) {
+  useEffect(() => { load(); }, []);
+
+  async function createContact(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
-    setError(null);
-
+    if (!form.first_name.trim() || !form.last_name.trim()) return;
     try {
+      setSaving(true);
+      setErr(null);
       const res = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        method:'POST',
+        headers:{ 'content-type':'application/json' },
+        body: JSON.stringify({
+          first_name: form.first_name.trim(),
+          last_name: form.last_name.trim(),
+          email: form.email.trim() || null,
+          phone: form.phone.trim() || null,
+        })
       });
-
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || 'Failed to add contact');
+        const t = await res.text();
+        throw new Error(`POST /api/contacts ${res.status} ${t}`);
       }
-
-      setForm({ first_name: '', last_name: '', email: '', phone: '' });
-      fetchContacts(); // refresh list after adding
-    } catch (e: any) {
-      setError(e.message);
+      setForm({ first_name:'', last_name:'', email:'', phone:'' });
+      load();
+    } catch (e:any) {
+      setErr(e.message || 'Failed to add contact');
     } finally {
       setSaving(false);
     }
   }
 
-  useEffect(() => {
-    fetchContacts();
-  }, []);
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return contacts;
+    return contacts.filter(c =>
+      [c.first_name, c.last_name, c.email, c.phone]
+        .filter(Boolean)
+        .some(v => String(v).toLowerCase().includes(s))
+    );
+  }, [q, contacts]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Contacts</h1>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {err && <p className="text-red-400 mb-3">{err}</p>}
+
+      {/* Create form */}
+      <form onSubmit={createContact} className="grid gap-3 mb-6"
+            style={{ gridTemplateColumns:'1fr 1fr 1fr 1fr auto' }}>
+        <input placeholder="First Name" value={form.first_name}
+               onChange={e=>setForm(f=>({...f, first_name: e.target.value}))} className="border rounded p-2"/>
+        <input placeholder="Last Name" value={form.last_name}
+               onChange={e=>setForm(f=>({...f, last_name: e.target.value}))} className="border rounded p-2"/>
+        <input placeholder="Email" type="email" value={form.email}
+               onChange={e=>setForm(f=>({...f, email: e.target.value}))} className="border rounded p-2"/>
+        <input placeholder="Phone" value={form.phone}
+               onChange={e=>setForm(f=>({...f, phone: e.target.value}))} className="border rounded p-2"/>
+        <button className="bg-blue-600 text-white px-4 rounded disabled:opacity-50"
+                disabled={saving}>
+          {saving ? 'Saving…' : 'Add Contact'}
+        </button>
+      </form>
+
+      {/* Search */}
+      <div className="mb-3">
+        <input value={q} onChange={e=>setQ(e.target.value)}
+               placeholder="Search name, email or phone"
+               className="border rounded p-2 w-full max-w-md"/>
+      </div>
+
+      {/* Table */}
       {loading ? (
-        <p>Loading contacts...</p>
-      ) : contacts.length === 0 ? (
-        <p className="text-gray-500">No contacts found.</p>
+        <p>Loading…</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-gray-400">No contacts found.</p>
       ) : (
-        <table className="w-full border border-gray-300 rounded-lg shadow-sm mb-6">
-          <thead className="bg-gray-100">
+        <table className="w-full border border-gray-700 rounded overflow-hidden">
+          <thead className="bg-gray-900">
             <tr>
-              <th className="text-left p-2 border-b">First Name</th>
-              <th className="text-left p-2 border-b">Last Name</th>
-              <th className="text-left p-2 border-b">Email</th>
-              <th className="text-left p-2 border-b">Phone</th>
+              <th className="text-left p-2">First Name</th>
+              <th className="text-left p-2">Last Name</th>
+              <th className="text-left p-2">Email</th>
+              <th className="text-left p-2">Phone</th>
+              <th className="text-left p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {contacts.map((c) => (
-              <tr key={c.id} className="border-b">
+            {filtered.map(c => (
+              <tr key={c.id} className="border-t border-gray-800">
                 <td className="p-2">{c.first_name}</td>
                 <td className="p-2">{c.last_name}</td>
                 <td className="p-2">{c.email || '-'}</td>
                 <td className="p-2">{c.phone || '-'}</td>
+                <td className="p-2">
+                  <Link href={`/app/contacts/${c.id}`} className="text-blue-400 hover:underline">Edit</Link>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
-
-      <form onSubmit={handleAddContact} className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <input
-            type="text"
-            placeholder="First Name"
-            value={form.first_name}
-            onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-            className="border rounded p-2"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            value={form.last_name}
-            onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-            className="border rounded p-2"
-            required
-          />
-        </div>
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="border rounded p-2 w-full"
-        />
-        <input
-          type="text"
-          placeholder="Phone"
-          value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          className="border rounded p-2 w-full"
-        />
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Add Contact'}
-        </button>
-      </form>
     </div>
   );
 }
