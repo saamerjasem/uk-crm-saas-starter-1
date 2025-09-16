@@ -1,21 +1,16 @@
-import Nav from "@/components/Nav";
+// app/app/layout.tsx
+import type { ReactNode } from "react";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div>
-      <Nav />
-      <div className="main">
-        <header className="header">
-          <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-            <strong>Demo Ltd</strong>
-            <span className="badge">London</span>
-          </div>
-          <div className="nav">
-            <a href="/login">Sign out</a>
-          </div>
-        </header>
-        <div className="container">{children}</div>
-      </div>
+    <div className="min-h-screen flex">
+      {/* Your left sidebar / nav stays as-is, or import it here */}
+      {/* <Aside /> */}
+
+      {/* MAIN CONTENT: note the max-w-none so it can use the whole window width */}
+      <main className="flex-1 max-w-none px-8 py-6 overflow-x-auto">
+        {children}
+      </main>
     </div>
   );
 }
