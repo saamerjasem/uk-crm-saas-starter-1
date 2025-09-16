@@ -39,8 +39,8 @@ export default function ContactsPage() {
 
   useEffect(() => { load(); }, []);
 
-  async function createContact(e: React.FormEvent) {
-    e.preventDefault();
+  async function createContact(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     if (!form.first_name.trim() || !form.last_name.trim()) return;
     try {
       setSaving(true);
@@ -80,56 +80,59 @@ export default function ContactsPage() {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
-      <h1 className="text-3xl font-semibold mb-6">Contacts</h1>
+      <h1 className="text-3xl font-semibold mb-5">Contacts</h1>
 
       {err && <p className="text-red-400 mb-3">{err}</p>}
 
-      {/* Create + Search */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
-        <input
-          placeholder="First Name"
-          value={form.first_name}
-          onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
-          className="border border-gray-700/60 bg-black/20 rounded p-2"
-        />
-        <input
-          placeholder="Last Name"
-          value={form.last_name}
-          onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
-          className="border border-gray-700/60 bg-black/20 rounded p-2"
-        />
-        <input
-          placeholder="Email"
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-          className="border border-gray-700/60 bg-black/20 rounded p-2"
-        />
-        <input
-          placeholder="Phone"
-          value={form.phone}
-          onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-          className="border border-gray-700/60 bg-black/20 rounded p-2"
-        />
-        <button
-          onClick={createContact}
-          disabled={saving}
-          className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded px-4 py-2 disabled:opacity-50"
-          aria-label="Add contact"
-        >
-          {saving ? 'Saving…' : 'Add Contact'}
-        </button>
+      {/* CONTROLS — strictly two rows on desktop */}
+      <form onSubmit={createContact} className="mb-5">
+        {/* Row 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <input
+            placeholder="First Name"
+            value={form.first_name}
+            onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))}
+            className="md:col-span-2 border border-gray-700/60 bg-black/20 rounded px-3 py-2 h-10"
+          />
+          <input
+            placeholder="Last Name"
+            value={form.last_name}
+            onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))}
+            className="md:col-span-2 border border-gray-700/60 bg-black/20 rounded px-3 py-2 h-10"
+          />
+          <input
+            placeholder="Email"
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            className="md:col-span-3 border border-gray-700/60 bg-black/20 rounded px-3 py-2 h-10"
+          />
+          <input
+            placeholder="Phone"
+            value={form.phone}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            className="md:col-span-3 border border-gray-700/60 bg-black/20 rounded px-3 py-2 h-10"
+          />
+          <button
+            type="submit"
+            disabled={saving}
+            className="md:col-span-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded px-4 h-10 disabled:opacity-50"
+            aria-label="Add contact"
+          >
+            {saving ? 'Saving…' : 'Add Contact'}
+          </button>
 
-        {/* Search spans full width on small screens */}
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search name, email or phone"
-          className="md:col-span-5 border border-gray-700/60 bg-black/20 rounded p-2 mt-1"
-        />
-      </div>
+          {/* Row 2 */}
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search name, email or phone"
+            className="md:col-span-12 border border-gray-700/60 bg-black/20 rounded px-3 py-2 h-10"
+          />
+        </div>
+      </form>
 
-      {/* Table */}
+      {/* TABLE — full width, crisp borders */}
       {loading ? (
         <p>Loading…</p>
       ) : filtered.length === 0 ? (
@@ -137,15 +140,13 @@ export default function ContactsPage() {
       ) : (
         <div className="relative overflow-x-auto rounded-md border border-gray-700/70 bg-black/20">
           <table className="w-full table-fixed text-sm">
-            {/* Fixed column proportions so the table feels balanced */}
             <colgroup>
               <col style={{ width: '18%' }} />
               <col style={{ width: '18%' }} />
-              <col style={{ width: '34%' }} />
+              <col style={{ width: '36%' }} />
               <col style={{ width: '18%' }} />
-              <col style={{ width: '12%' }} />
+              <col style={{ width: '10%' }} />
             </colgroup>
-
             <thead className="bg-gray-900/70 sticky top-0 z-10">
               <tr className="[&>th]:px-4 [&>th]:py-3 [&>th]:text-left [&>th]:font-medium [&>th]:border-b [&>th]:border-gray-700/70">
                 <th>First Name</th>
@@ -155,7 +156,6 @@ export default function ContactsPage() {
                 <th>Actions</th>
               </tr>
             </thead>
-
             <tbody className="divide-y divide-gray-800/70">
               {filtered.map((c, idx) => (
                 <tr
@@ -174,17 +174,23 @@ export default function ContactsPage() {
                   role="button"
                   aria-label={`Open ${c.first_name} ${c.last_name}`}
                 >
-                  <td className="px-4 py-3 truncate" title={c.first_name}>{c.first_name}</td>
-                  <td className="px-4 py-3 truncate" title={c.last_name}>{c.last_name}</td>
+                  <td className="px-4 py-3 truncate" title={c.first_name}>
+                    {c.first_name}
+                  </td>
+                  <td className="px-4 py-3 truncate" title={c.last_name}>
+                    {c.last_name}
+                  </td>
                   <td className="px-4 py-3">
                     <span className="block truncate" title={c.email || ''}>
                       {c.email || '-'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 truncate" title={c.phone || ''}>{c.phone || '-'}</td>
+                  <td className="px-4 py-3 truncate" title={c.phone || ''}>
+                    {c.phone || '-'}
+                  </td>
                   <td
                     className="px-4 py-3"
-                    onClick={(e) => e.stopPropagation()} // allow link without triggering row click
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Link
                       href={`/app/contacts/${c.id}`}
